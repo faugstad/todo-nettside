@@ -1,0 +1,23 @@
+(function(){const n=document.createElement("link").relList;if(n&&n.supports&&n.supports("modulepreload"))return;for(const r of document.querySelectorAll('link[rel="modulepreload"]'))o(r);new MutationObserver(r=>{for(const i of r)if(i.type==="childList")for(const l of i.addedNodes)l.tagName==="LINK"&&l.rel==="modulepreload"&&o(l)}).observe(document,{childList:!0,subtree:!0});function e(r){const i={};return r.integrity&&(i.integrity=r.integrity),r.referrerPolicy&&(i.referrerPolicy=r.referrerPolicy),r.crossOrigin==="use-credentials"?i.credentials="include":r.crossOrigin==="anonymous"?i.credentials="omit":i.credentials="same-origin",i}function o(r){if(r.ep)return;r.ep=!0;const i=e(r);fetch(r.href,i)}})();document.querySelector("#app").innerHTML=`
+  <div class="todo-app">
+    <h1>Mine ting å gjøre</h1>
+    <div class="todo-input">
+      <input id="todo-input" type="text" placeholder="Skriv noe du må gjøre..." aria-label="Ny oppgave" />
+      <button id="add-btn" type="button">Legg til</button>
+    </div>
+    <ul id="todo-list" class="todo-list"></ul>
+    <div class="todo-footer">
+      <span id="todo-count" class="todo-count">0 igjen</span>
+      <div class="todo-filters" role="group" aria-label="Filter">
+        <button class="filter-btn active" data-filter="all">Alle</button>
+        <button class="filter-btn" data-filter="active">Aktive</button>
+        <button class="filter-btn" data-filter="completed">Ferdige</button>
+      </div>
+      <button id="clear-completed" class="clear-btn" type="button">Fjern ferdige</button>
+    </div>
+  </div>
+`;const f=document.querySelector("#todo-input"),y=document.querySelector("#add-btn"),d=document.querySelector("#todo-list"),E=document.querySelector("#todo-count"),g=[...document.querySelectorAll(".filter-btn")],h=document.querySelector("#clear-completed");let c=L(),p="all";function L(){try{const t=localStorage.getItem("todos");return t?JSON.parse(t):[]}catch{return[]}}function a(){localStorage.setItem("todos",JSON.stringify(c))}function m(){const t=f.value.trim();if(!t)return;const n={id:crypto.randomUUID(),text:t,completed:!1};c.push(n),a(),s(),f.value="",f.focus()}y.addEventListener("click",m);f.addEventListener("keydown",t=>{t.key==="Enter"&&m()});d.addEventListener("dragover",t=>{t.preventDefault();const n=S(d,t.clientY),e=document.querySelector(".dragging");e&&(n==null?d.appendChild(e):d.insertBefore(e,n))});function S(t,n){return[...t.querySelectorAll(".todo-item:not(.dragging)")].reduce((o,r)=>{const i=r.getBoundingClientRect(),l=n-(i.top+i.height/2);return l<0&&l>o.offset?{offset:l,element:r}:o},{offset:Number.NEGATIVE_INFINITY,element:null}).element}function x(t,n){const e=c.find(o=>o.id===t);e&&(e.completed=n),a(),v()}function b(t){c=c.filter(n=>n.id!==t),a(),s()}function k(t,n){const e=c.find(o=>o.id===t);e&&(e.text=n),a(),s()}function q(){c=c.filter(t=>!t.completed),a(),s()}function T(t){p=t,g.forEach(n=>n.classList.toggle("active",n.dataset.filter===t)),s()}function N(){return p==="active"?c.filter(t=>!t.completed):p==="completed"?c.filter(t=>t.completed):c}function v(){const t=c.filter(n=>!n.completed).length;E.textContent=`${t} igjen`}function s(){d.innerHTML="",N().forEach(n=>{const e=document.createElement("li");e.className="todo-item",e.dataset.id=n.id,e.setAttribute("draggable","true"),e.innerHTML=`
+      <input type="checkbox" class="todo-check" aria-label="Ferdig" ${n.completed?"checked":""} />
+      <span class="todo-text">${n.text}</span>
+      <button class="delete-btn" aria-label="Slett">Slett</button>
+    `;const o=e.querySelector(".todo-check"),r=e.querySelector(".todo-text"),i=e.querySelector(".delete-btn");n.completed&&e.classList.add("done"),o.addEventListener("change",()=>{e.classList.toggle("done",o.checked),x(n.id,o.checked)}),i.addEventListener("click",l=>{l.stopPropagation(),b(n.id)}),r.addEventListener("dblclick",()=>F(e,n)),e.addEventListener("dragstart",()=>{e.classList.add("dragging")}),e.addEventListener("dragend",()=>{e.classList.remove("dragging"),O()}),d.appendChild(e)}),v()}function F(t,n){const e=n.text,o=document.createElement("input");o.type="text",o.className="edit-input",o.value=e,t.querySelector(".todo-text").replaceWith(o),o.focus(),o.setSelectionRange(e.length,e.length);const i=()=>{const u=o.value.trim();u?k(n.id,u):b(n.id)},l=()=>s();o.addEventListener("keydown",u=>{u.key==="Enter"&&i(),u.key==="Escape"&&l()}),o.addEventListener("blur",i)}function O(){const t=[...d.children].map(e=>e.dataset.id),n=new Map(c.map(e=>[e.id,e]));c=t.map(e=>n.get(e)).filter(Boolean),a()}g.forEach(t=>t.addEventListener("click",()=>T(t.dataset.filter)));h.addEventListener("click",q);s();
